@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Primary Meta Tags -->
+  <title>new Wedding</title>
+  <meta name="title" content="You're Invited! | Jijo & Aleena's Wedding">
+  <meta name="description"
+    content="We cordially invite you to share in our joy and celebrate our wedding with us on August 23, 2026. Your presence will make our day truly special!">
+
+  <!-- Open Graph / Facebook / WhatsApp -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="You're Invited! | Jijo & Aleena's Wedding">
+  <meta property="og:description"
+    content="We cordially invite you to share in our joy and celebrate our wedding with us on August 23, 2026. Your presence will make our day truly special!">
+  <meta property="og:image" content="https://wedding-invite.raicreo.com/assets/meta.webp">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:title" content="You're Invited! | Jijo & Aleena's Wedding">
+  <meta property="twitter:description"
+    content="We cordially invite you to share in our joy and celebrate our wedding with us on August 23, 2026. Your presence will make our day truly special!">
+  <meta property="twitter:image" content="https://wedding-invite.raicreo.com/assets/meta.webp">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gveret+Levin&family=Updock&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/png" href="assets/fav-icon-1.png">
+
+  <!-- Lottie & Three.js (subtle) & GSAP CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/@studio-freight/lenis@1.0.29/dist/lenis.min.js"></script>
+  <script src="https://unpkg.com/split-type"></script>
+</head>
+
+<body>
+
+
+  <!-- Global Floating Love Balloons -->
+  <div class="balloon-heart balloon-1">&#x2665;&#xFE0E;</div>
+  <div class="balloon-heart balloon-2">&#x2665;&#xFE0E;</div>
+
+  <!-- Cinematic Intro Envelope Loader -->
+  <div class="loader">
+    <div class="loader-hearts">
+      <!-- Hearts generated via CSS/JS or just CSS -->
+      <div class="heart-shape" style="left: 10%; animation-delay: 0s;">&#x2665;&#xFE0E;</div>
+      <div class="heart-shape" style="left: 30%; animation-delay: 2s; font-size: 1.5rem;">&#x2665;&#xFE0E;</div>
+      <div class="heart-shape" style="left: 50%; animation-delay: 4s; opacity: 0.3;">&#x2665;&#xFE0E;</div>
+      <div class="heart-shape" style="left: 70%; animation-delay: 1s; font-size: 2rem;">&#x2665;&#xFE0E;</div>
+      <div class="heart-shape" style="left: 90%; animation-delay: 3s;">&#x2665;&#xFE0E;</div>
+    </div>
+    <div class="loader-intro-text">
+      Together with our families <br>
+      We invite you to celebrate our wedding
+    </div>
+    <div class="envelope-wrapper">
+      <div class="envelope">
+        <div class="envelope-flap"></div>
+        <div class="envelope-body"></div>
+        <button class="wax-seal" id="open-envelope">
+          <span class="seal-text">J&A</span>
+        </button>
+      </div>
+      <div class="envelope-instructions">Please tap the seal to open</div>
+    </div>
+
+    <!-- Transition Heart (Shows after clicking the seal) -->
+    <div class="loader-transition-heart"
+      style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+      <div class="pulsing-heart">&#x2665;&#xFE0E;</div>
+    </div>
+  </div>
+
+  <!-- Background Audio -->
+  <audio id="bg-music" src="./assets/chingamasam-vannu-chernnal.mp3" loop preload="auto"></audio>
+
+  <!-- Floating Controls -->
+  <div class="floating-controls">
+    <!-- Calendar Add Button -->
+    <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Wedding+of+Jijo+and+Aleena&dates=20260823T043000Z/20260823T123000Z&details=You+are+invited+to+celebrate+the+wedding+of+Jijo+and+Aleena!&location=Perumbully+House,+Karuvannur+P+O+Irinjalakuda"
+      target="_blank" class="calendar-btn" title="Add to Google Calendar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+      </svg>
+      <span class="music-text">Save Date</span>
+    </a>
+
+    <!-- Music Controls -->
+    <div class="music-toggle" id="music-toggle">
+      <div class="bars">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </div>
+      <span class="music-text" id="music-text-label">Music Off</span>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="smooth-scroll">
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+
+      <!-- Groom Wrapper (Left) -->
+      <div class="hero-img-wrapper hero-img-left" data-speed="1.2">
+        <img src="./assets/jijo.png" alt="Bride">
+        <div class="speech-bubbles-container groom-container">
+          <div class="groom-bubble bubble-reaction">
+            <span style="color: red;">!</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bride Wrapper (Right) -->
+      <div class="hero-img-wrapper hero-img-right" data-speed="1.2">
+        <img src="./assets/aleena.png" alt="Groom">
+        <div class="speech-bubbles-container bride-container">
+          <div class="bride-bubble bubble-1">
+            Public announcement:<br>
+            The man has only 32 days left to enjoy his peaceful, single life. 😌😂
+          </div>
+          <div class="bride-bubble bubble-2">
+            After that, he'll officially be promoted to:<br>
+            ✨ Full-time husband<br>
+            ✨ Lifetime shopping partner
+          </div>
+          <div class="bride-bubble bubble-3">
+            ✨ Personal photographer<br>
+            ✨ Food taster<br>
+            ✨ And the person who has to answer, "Nothing... why?" correctly every single time. 🤭
+          </div>
+          <div class="bride-bubble bubble-4">
+            😹Don't be late... it's a one-time event. 😜🤍
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-content">
+        <div class="hero-text-wrap">
+          <p class="hero-subtitle split-text">Two Hearts</p>
+          <p class="hero-subtitle split-text">One Journey</p>
+          <h1 class="hero-title split-text">Jijo & Aleena</h1>
+          <p class="hero-date split-text">August 23, 2026</p>
+        </div>
+      </div>
+
+      <!-- Floating Petals Container -->
+      <div class="petals-container"></div>
+    </section>
+
+    <!-- Invitation Section with Splitting Images -->
+    <section class="invitation-section" id="invitation">
+      <div class="invitation-images-container">
+        <!-- Background decorative elements -->
+        <div class="invite-bg-left"></div>
+        <div class="invite-bg-right"></div>
+
+        <img src="./assets/jijo-suite.png" alt="Groom in suite" class="invite-img-left">
+        <img src="./assets/aleena-wed.png" alt="Bride in wedding dress" class="invite-img-right">
+      </div>
+
+      <div class="invitation-letter glassmorphism">
+        <!-- Bible Quote -->
+        <div class="letter-quote">
+          <p>Then the Lord God said</p>
+          <p>"It is not good that the man should be alone.<br>I will make him a helper as his partner"</p>
+          <p class="quote-ref">Genesis 2:18</p>
+        </div>
+
+        <!-- Groom Parents -->
+        <div class="letter-parents">
+          <h3>Mr. George P D & Mrs. Magy George</h3>
+          <p>Perumbully House, Karuvannur P O Irinjalakuda</p>
+        </div>
+
+        <!-- Invite Text -->
+        <p class="letter-invite-text">
+          We cordially invite your esteemed presence and blessings<br>
+          with family to grace the auspicious occasion of<br>
+          the marriage of our son
+        </p>
+
+        <!-- Names -->
+        <h1 class="letter-names">Jijo <span class="weds">Weds</span> Aleena</h1>
+
+        <div class="letter-hearts">
+          <span class="letter-heart heart-left">&#x2665;&#xFE0E;</span>
+          <span class="letter-heart heart-center">&#x2665;&#xFE0E;</span>
+          <span class="letter-heart heart-right">&#x2665;&#xFE0E;</span>
+        </div>
+
+        <!-- Bride Parents -->
+        <div class="letter-parents bride-parents">
+          <h3>D/o Mr. Baby George & Mrs. Shanty Baby</h3>
+          <p>Punnakunnel House, chelachuvadu</p>
+        </div>
+
+        <!-- Event Details Grid -->
+        <div class="letter-event-grid">
+          <div class="event-col">
+            <strong>23.08.2026</strong>
+            <span>Sunday</span>
+          </div>
+          <div class="event-col center-col">
+            <strong>St. Mary's church</strong>
+            <span>Karuvannur @ 12:05 PM</span>
+          </div>
+          <div class="event-col">
+            <strong>Lunch at</strong>
+            <span>Jubilee parish<br>Hall karuvannur</span>
+          </div>
+        </div>
+
+        <!-- Footer Note -->
+        <div class="letter-footer">
+          <h4 class="highlight-text">Join us for the celebration & Lunch thereafter</h4>
+          <p>Sharing Happiness: Jiss Mariya, Amal, Anu, Perumbully & Punnakunnel Family, Friends & Relatives</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Location Details Section (Replaces couple-reveal) -->
+    <section class="location-details" id="location">
+      <h2 class="section-title split-text">Event Locations</h2>
+
+      <div class="location-grid">
+        <!-- Church Location -->
+        <div class="location-card glassmorphism">
+          <h3>St Mary's Church</h3>
+          <p>Karuvannur P.O, Irinjalakuda</p>
+          <p><strong>Time: 12:05 PM</strong></p>
+          <div class="map-wrapper">
+            <!-- Placeholder iframe for church map -->
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15705.517316684814!2d76.2131976!3d10.3807217!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba7ede3f88f28ab%3A0xc665e710b779a957!2sKaruvannur%2C%20Kerala!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+              width="100%" height="250" style="border:0; border-radius: 10px;" allowfullscreen="" loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </div>
+          <a href="https://www.google.com/maps/search/?api=1&query=St.+Mary's+Church,+Karuvannur,+Irinjalakuda,+Kerala"
+            target="_blank" class="btn-navigate">Get Directions</a>
+        </div>
+
+        <!-- Reception Location -->
+        <div class="location-card glassmorphism">
+          <h3>Jubilee Parish Hall</h3>
+          <p>Karuvannur (Next to Church)</p>
+          <p><strong>Time: After Wedding</strong></p>
+          <div class="map-wrapper">
+            <!-- Placeholder iframe for hall map -->
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15705.517316684814!2d76.2131976!3d10.3807217!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ba7ede3f88f28ab%3A0xc665e710b779a957!2sKaruvannur%2C%20Kerala!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+              width="100%" height="250" style="border:0; border-radius: 10px;" allowfullscreen="" loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </div>
+          <a href="https://www.google.com/maps/search/?api=1&query=Jubilee+Parish+Hall,+Karuvannur,+Irinjalakuda,+Kerala"
+            target="_blank" class="btn-navigate">Get Directions</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Wedding Countdown -->
+    <section class="countdown-section">
+      <div class="countdown-glass">
+        <h2 class="split-text">The Big Day Approaches</h2>
+        <div class="countdown-timer">
+          <div class="time-block"><span class="num" id="days">00</span><span class="label">Days</span></div>
+          <div class="time-block"><span class="num" id="hours">00</span><span class="label">Hours</span></div>
+          <div class="time-block"><span class="num" id="minutes">00</span><span class="label">Mins</span></div>
+          <div class="time-block"><span class="num" id="seconds">00</span><span class="label">Secs</span></div>
+        </div>
+      </div>
+      <!-- Background particles -->
+      <div id="countdown-particles"></div>
+    </section>
+
+    <!-- Gallery Section -->
+    <!-- <section class="gallery-section" id="gallery">
+      <h2 class="section-title split-text">Captured Moments</h2>
+      <div class="masonry-gallery">
+        <div class="gallery-item"><img src="./assets/hero_couple_1784639874500.png" alt="Gallery"></div>
+        <div class="gallery-item"><img src="./assets/bride_portrait_1784639884595.png" alt="Gallery"></div>
+        <div class="gallery-item"><img src="./assets/groom_portrait_1784639898045.png" alt="Gallery"></div>
+        <div class="gallery-item"><img src="./assets/wedding_venue_1784639912735.png" alt="Gallery"></div>
+      </div>
+    </section> -->
+
+    <!-- RSVP & Counter -->
+    <section class="rsvp-section" id="rsvp">
+      <div class="rsvp-container">
+        <div class="rsvp-image-wrapper">
+          <img src="./assets/couple.png" alt="Couple" class="rsvp-couple-img">
+        </div>
+
+        <div class="rsvp-form glassmorphism">
+          <h2 class="split-text">Send Your Wishes</h2>
+          <form id="wishesForm">
+            <div class="input-group">
+              <input type="text" id="wishName" required placeholder="Your Name">
+            </div>
+            <div class="input-group">
+              <textarea id="wishMessage" required placeholder="Write your beautiful wishes here..." rows="4"></textarea>
+            </div>
+            <div class="form-actions" style="display: flex; gap: 15px; margin-top: 20px;">
+              <button type="button" class="btn-submit" id="btnSendGroom" style="flex: 1;">Send to Jijo</button>
+              <button type="button" class="btn-submit" id="btnSendBride" style="flex: 1;">Send to Aleena</button>
+            </div>
+          </form>
+          <div class="success-message" id="wishSuccess" style="display: none;">
+            <h3>Thank You!</h3>
+            <p>Your beautiful wishes mean the world to us.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Wishes Wall -->
+    <section class="wishes-section">
+      <h2 class="section-title split-text">Wishes & Blessings</h2>
+      <div class="marquee-wrapper">
+        <div class="marquee-track">
+          <!-- Cards will be cloned by JS for infinite effect -->
+          <div class="wish-card glassmorphism">
+            <p class="wish-text">Here’s to love, laughter, and a happily ever after. Jijo & Aleena, may your journey
+              together be filled with endless joy and unspoken understanding.</p>
+            <p class="wish-author">- Edwin</p>
+          </div>
+          <div class="wish-card glassmorphism">
+            <p class="wish-text">Two wonderful souls, one beautiful story. May your home be filled with warmth, your
+              hearts with peace, and your lives with unconditional love.</p>
+            <p class="wish-author">- Ashik</p>
+          </div>
+          <div class="wish-card glassmorphism">
+            <p class="wish-text">Wishing you both a lifetime of quiet mornings, joyful celebrations, and a love that
+              grows deeper with every passing year. Congratulations, Jijo & Aleena!</p>
+            <p class="wish-author">- Ashna</p>
+          </div>
+          <div class="wish-card glassmorphism">
+            <p class="wish-text">Cheers to Jijo and Aleena! May your love be modern enough to survive the times, and
+              old-fashioned enough to last forever.</p>
+            <p class="wish-author">- Christeena</p>
+          </div>
+          <div class="wish-card glassmorphism">
+            <p class="wish-text">Finding the one person you want to annoy for the rest of your life is true romance. So
+              happy you found each other, Jijo & Aleena!</p>
+            <p class="wish-author">- Ashin</p>
+          </div>
+          <div class="wish-card glassmorphism">
+            <p class="wish-text">Here’s to the best team-up yet. May your life together be packed with adventure,
+              endless laughter, and always agreeing on what to eat!</p>
+            <p class="wish-author">- Riya</p>
+          </div>
+          <div class="wish-card glassmorphism">
+            <p class="wish-text">WLove is not about finding someone you can live with; it’s about finding the person you
+              can’t live without. So thrilled to celebrate this next chapter with you, Jijo & Aleena!</p>
+            <p class="wish-author">- Ashmi</p>
+          </div>
+          <div class="wish-card glassmorphism">
+            <p class="wish-text">May your story be long, your smiles be frequent, and your home be a place where love
+              always feels welcome. Warmest wishes to Jijo and Aleena!</p>
+            <p class="wish-author">- Johan</p>
+          </div>
+          <div class="wish-card glassmorphism">
+            <p class="wish-text">രണ്ട് മനസ്സുകൾ ഒന്നാകുന്ന ഈ സുദിനത്തിൽ, ജീവിതാവസാനം വരെ സ്നേഹത്തോടെയും
+              മനസ്സിലാക്കലോടെയും കൂടെയുണ്ടാകാൻ ജിജോയ്ക്കും അലീനയ്ക്കും സാധിക്കട്ടെ.</p>
+            <p class="wish-author">- Christy</p>
+          </div>
+          <div class="wish-card glassmorphism">
+            <p class="wish-text">ഒന്നായി തുടങ്ങുന്ന ഈ പുതിയ യാത്രയിൽ, നിങ്ങളുടെ ജീവിതത്തിൽ പ്രകാശവും സന്തോഷവും എന്നും
+              നിലനിൽക്കട്ടെ</p>
+            <p class="wish-author">- Shiny</p>
+          </div>
+          <div class="wish-card glassmorphism">
+            <p class="wish-text">
+            <p class="wish-text">Wishing you both a lifetime of quiet mornings, joyful celebrations, and a love that
+              grows deeper with every passing year. Congratulations, Jijo & Aleena!</p>
+            </p>
+            <p class="wish-author">- Shanto</p>
+          </div>
+          <div class="wish-card glassmorphism">
+            <p class="wish-text">May the love you share today grow stronger as you grow old together. Wishing Jijo and
+              Aleena a marriage far richer and more beautiful than any dream.</p>
+            <p class="wish-author">- Jis</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Quote Section -->
+    <section class="quote-section">
+      <div class="quote-container">
+        <h2 class="quote-text">"When two souls are meant to meet, love finds the way"</h2>
+        <div class="handwriting-signature">Jijo & Aleena</div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <p class="made-with-love">Made with<br><span class="footer-love">Love</span></p>
+        <p class="developer-credit">Design & Developed by <a href="https://www.raicreo.com" target="_blank"
+            rel="noopener noreferrer">raicreo</a></p>
+        <p class="copyright">&copy; 2026 Jijo & Aleena. All rights reserved.</p>
+      </div>
+    </footer>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
