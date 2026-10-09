@@ -11,23 +11,17 @@ gsap.registerPlugin(ScrollTrigger);
 let lenis;
 try {
   lenis = new Lenis({
-    duration: 1.2,
+    duration: 1.1,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     orientation: 'vertical',
     gestureOrientation: 'vertical',
     smoothWheel: true,
-    wheelMultiplier: 1.0,
-    touchMultiplier: 1.5,
+    smoothTouch: false, // Ensures mobile touch uses 100% native momentum without sticking
+    touchMultiplier: 1.0,
     infinite: false,
   });
 
-  function raf(time) {
-    lenis.raf(time);
-    requestAnimationFrame(raf);
-  }
-  requestAnimationFrame(raf);
-
-  // Synchronize Lenis with GSAP ScrollTrigger
+  // Synchronize Lenis with GSAP ScrollTrigger ticker ONLY (no duplicate RAF loop)
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add((time) => {
     lenis.raf(time * 1000);
@@ -44,7 +38,7 @@ try {
           e.preventDefault();
           lenis.scrollTo(targetElement, {
             offset: -30,
-            duration: 1.4,
+            duration: 1.2,
             easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
           });
         }
@@ -215,30 +209,49 @@ function initSiteAnimations() {
       }
     });
 
-    // Hero Background Image Parallax
-    gsap.to('.hero-bg-img', {
-      yPercent: 12,
-      scale: 1.12,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: '.hero-watercolor',
-        start: 'top top',
-        end: 'bottom top',
-        scrub: 1,
-      }
+    // Responsive Parallax animations with GSAP matchMedia
+    const mm = gsap.matchMedia();
+
+    // Desktop only (> 768px): Full artistic parallax scrub
+    mm.add("(min-width: 769px)", () => {
+      gsap.to('.hero-bg-img', {
+        yPercent: 12,
+        scale: 1.12,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '.hero-watercolor',
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 1,
+        }
+      });
+
+      gsap.to('.hero-content', {
+        yPercent: -20,
+        opacity: 0.85,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '.hero-watercolor',
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 1,
+        }
+      });
     });
 
-    // Hero Text float up on scroll
-    gsap.to('.hero-content', {
-      yPercent: -20,
-      opacity: 0.85,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: '.hero-watercolor',
-        start: 'top top',
-        end: 'bottom top',
-        scrub: 1,
-      }
+    // Mobile (<= 768px): Silky smooth, zero touch-drag resistance
+    mm.add("(max-width: 768px)", () => {
+      // Gentle opacity fade only; NO backward yPercent translation fighting the thumb!
+      gsap.to('.hero-content', {
+        opacity: 0.45,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '.hero-watercolor',
+          start: 'top top',
+          end: 'bottom 25%',
+          scrub: 0.5,
+        }
+      });
     });
 
     // Traditional Parchment Card Entrance
@@ -268,6 +281,9 @@ function initSiteAnimations() {
 
     // Floating Solid Love Hearts in Hero
     createHeroPetals();
+
+    // Ensure ScrollTrigger measures accurate viewport bounds
+    ScrollTrigger.refresh();
 
   } catch (err) {
     console.error("Site animations error:", err);
