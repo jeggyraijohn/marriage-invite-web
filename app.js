@@ -547,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const isFirebaseLive = window.weddingFirebase?.isLive;
 
     if (isFirebaseLive && db) {
-      console.log("📡 Subscribed to Google Firebase Realtime Database for live guestbook updates!");
+      console.log("Subscribed to Google Firebase Realtime Database for live guestbook updates!");
       const wishesRef = db.ref('wedding_wishes');
 
       wishesRef.on('value', (snapshot) => {
@@ -572,6 +572,25 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   initRealtimeWishes();
+
+  // Helper to mark button as sent with solid checkmark icon
+  function markButtonSent(btn, name) {
+    if (!btn) return;
+    btn.disabled = true;
+    btn.classList.add('is-disabled');
+    const iconSpan = btn.querySelector('.wa-icon-svg');
+    if (iconSpan) {
+      iconSpan.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
+          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </svg>
+      `;
+    }
+    const textSpan = btn.querySelector('.wa-btn-text');
+    if (textSpan) {
+      textSpan.textContent = `Sent to ${name}`;
+    }
+  }
 
   // Wish Submission Handler (Saves to Firebase & opens WhatsApp)
   async function handleWishSubmission(recipient) {
@@ -619,22 +638,15 @@ document.addEventListener('DOMContentLoaded', () => {
           ...wishPayload,
           timestamp: firebase.database.ServerValue.TIMESTAMP || Date.now()
         });
-        console.log("🔥 Wish posted to Google Firebase Realtime Database!");
+        console.log("Wish posted to Google Firebase Realtime Database!");
       } else {
         // Local real-time sync
         saveLocalWish(wishPayload);
         renderWishesToMarquee(getLocalWishes());
       }
 
-      // Disable respective button after wish is submitted
-      if (activeBtn) {
-        activeBtn.disabled = true;
-        activeBtn.classList.add('is-disabled');
-        const textSpan = activeBtn.querySelector('.wa-btn-text');
-        if (textSpan) {
-          textSpan.textContent = `Sent to ${recipientName} ✓`;
-        }
-      }
+      // Disable respective button after wish is submitted using solid icon
+      markButtonSent(activeBtn, recipientName);
 
       if (wishSuccess) {
         wishSuccess.style.display = 'inline-flex';
@@ -652,15 +664,8 @@ document.addEventListener('DOMContentLoaded', () => {
       saveLocalWish(wishPayload);
       renderWishesToMarquee(getLocalWishes());
 
-      // Disable respective button on fallback as well
-      if (activeBtn) {
-        activeBtn.disabled = true;
-        activeBtn.classList.add('is-disabled');
-        const textSpan = activeBtn.querySelector('.wa-btn-text');
-        if (textSpan) {
-          textSpan.textContent = `Sent to ${recipientName} ✓`;
-        }
-      }
+      // Disable respective button on fallback as well using solid icon
+      markButtonSent(activeBtn, recipientName);
     } finally {
       if (activeBtn && !activeBtn.disabled) {
         activeBtn.style.opacity = '1';
@@ -673,7 +678,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const targetNumber = recipient === 'groom' ? groomWhatsApp : brideWhatsApp;
 
     const messageTemplate = 
-`Dear ${recipientName} & ${recipient === 'groom' ? 'Neha' : 'Andrews'}! 💍💐
+`Dear ${recipientName} & ${recipient === 'groom' ? 'Neha' : 'Andrews'}!
 Warmest congratulations on your wedding!
 
 "${guestMessage}"
