@@ -1,7 +1,6 @@
-
 // Force page to always start at the top on refresh
 if ('scrollRestoration' in history) {
-    history.scrollRestoration = 'manual';
+  history.scrollRestoration = 'manual';
 }
 window.scrollTo(0, 0);
 
@@ -11,504 +10,689 @@ gsap.registerPlugin(ScrollTrigger);
 // Initialize Lenis Smooth Scroll
 let lenis;
 try {
-    lenis = new Lenis({
-        duration: 1.2,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        direction: 'vertical',
-        gestureDirection: 'vertical',
-        smooth: true,
-        mouseMultiplier: 1,
-        smoothTouch: false,
-        touchMultiplier: 2,
-        infinite: false,
-    });
+  lenis = new Lenis({
+    duration: 1.2,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    orientation: 'vertical',
+    gestureOrientation: 'vertical',
+    smoothWheel: true,
+    wheelMultiplier: 1.0,
+    touchMultiplier: 1.5,
+    infinite: false,
+  });
 
-    function raf(time) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
-    }
+  function raf(time) {
+    lenis.raf(time);
     requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
 
-    // Integrate Lenis with GSAP ScrollTrigger
-    lenis.on('scroll', ScrollTrigger.update);
-    gsap.ticker.add((time) => {
-        lenis.raf(time * 1000);
+  // Synchronize Lenis with GSAP ScrollTrigger
+  lenis.on('scroll', ScrollTrigger.update);
+  gsap.ticker.add((time) => {
+    lenis.raf(time * 1000);
+  });
+  gsap.ticker.lagSmoothing(0, 0);
+
+  // Smooth scroll on all anchor links
+  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+    anchor.addEventListener('click', function (e) {
+      const targetId = this.getAttribute('href');
+      if (targetId && targetId !== '#') {
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+          e.preventDefault();
+          lenis.scrollTo(targetElement, {
+            offset: -30,
+            duration: 1.4,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+          });
+        }
+      }
     });
-    gsap.ticker.lagSmoothing(0, 0);
+  });
 } catch (e) {
-    console.error("Lenis init failed:", e);
+  console.warn("Lenis smooth scroll initialization fallback:", e);
 }
 
-// Preloader Logic
+// Preloader & Envelope Logic
 const openEnvelopeBtn = document.getElementById('open-envelope');
-const loader = document.querySelector('.loader');
+const preloader = document.getElementById('preloader');
 const envelopeFlap = document.querySelector('.envelope-flap');
+const envelope = document.querySelector('.envelope');
 const bgMusic = document.getElementById('bg-music');
 const musicToggle = document.getElementById('music-toggle');
+const musicLabel = document.getElementById('music-text-label');
 
-// Animate Envelope on load
+// Intro animation for preloader
 document.addEventListener('DOMContentLoaded', () => {
-    try {
-        gsap.from('.envelope-wrapper', {
-            y: 50,
-            opacity: 0,
-            duration: 1.5,
-            ease: 'power3.out'
-        });
-    } catch (e) {
-        console.error("GSAP Animation error on load", e);
-    }
+  try {
+    gsap.from('.loader-intro-badge', {
+      y: -30,
+      opacity: 0,
+      duration: 1.2,
+      ease: 'power3.out',
+    });
+    gsap.from('.envelope-wrapper', {
+      y: 40,
+      opacity: 0,
+      duration: 1.4,
+      delay: 0.3,
+      ease: 'power3.out',
+    });
+  } catch (err) {
+    console.warn("GSAP intro error:", err);
+  }
+
+  // Start countdown immediately
+  initCountdown();
 });
 
-// Enter Site
-openEnvelopeBtn.addEventListener('click', () => {
-    // Open envelope animation
+// Open Invitation Envelope & Enter Site
+if (openEnvelopeBtn) {
+  openEnvelopeBtn.addEventListener('click', () => {
+    // 1. Break wax seal & open top flap
     openEnvelopeBtn.classList.add('opened');
-    envelopeFlap.classList.add('opened');
+    openEnvelopeBtn.style.pointerEvents = 'none';
 
-    // Play music
-    bgMusic.play().then(() => {
+    if (envelopeFlap) {
+      envelopeFlap.classList.add('opened');
+    }
+
+    // 2. Shortly after flap starts opening, slide letter card UP out of the envelope
+    setTimeout(() => {
+      if (envelope) {
+        envelope.classList.add('opened');
+      }
+    }, 280);
+
+    // 3. Play background music
+    if (bgMusic) {
+      bgMusic.play().then(() => {
+        if (musicToggle) musicToggle.classList.add('playing');
+        if (musicLabel) musicLabel.textContent = 'Music On';
+      }).catch((e) => {
+        console.log("Audio playback notice:", e);
+      });
+    }
+
+    // 4. Give user clear time (1.6s) to see the letter card that just emerged before transitioning
+    setTimeout(() => {
+      gsap.to(['.envelope-wrapper', '.loader-intro-badge'], {
+        opacity: 0,
+        y: -25,
+        duration: 0.65,
+        onComplete: () => {
+          const envWrapper = document.querySelector('.envelope-wrapper');
+          const introBadge = document.querySelector('.loader-intro-badge');
+          if (envWrapper) envWrapper.style.display = 'none';
+          if (introBadge) introBadge.style.display = 'none';
+
+          // Show transition lotus blessing
+          const transitionBloom = document.querySelector('.loader-transition-heart');
+          if (transitionBloom) {
+            transitionBloom.style.display = 'block';
+            gsap.fromTo(transitionBloom,
+              { opacity: 0, scale: 0.6 },
+              { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.5)' }
+            );
+          }
+
+          // Fade out preloader completely into site
+          setTimeout(() => {
+            gsap.to(preloader, {
+              opacity: 0,
+              duration: 1.1,
+              ease: 'power4.inOut',
+              onComplete: () => {
+                if (preloader) preloader.style.display = 'none';
+                initSiteAnimations(); // Trigger hero and scroll reveals
+              }
+            });
+          }, 1300);
+        }
+      });
+    }, 1600);
+  });
+}
+
+// Background Music Toggle
+if (musicToggle && bgMusic) {
+  const toggleAudio = () => {
+    if (bgMusic.paused) {
+      bgMusic.play().then(() => {
         musicToggle.classList.add('playing');
-        document.getElementById('music-text-label').textContent = 'Music On';
-    }).catch(e => {
-        console.log("Audio play failed: ", e);
-        alert("Music could not be played! Please make sure you have added the 'chingamasam-vannu-chernnal.mp3' file into the 'assets' folder.");
+        if (musicLabel) musicLabel.textContent = 'Music On';
+      }).catch((e) => {
+        console.warn("Music play blocked:", e);
+      });
+    } else {
+      bgMusic.pause();
+      musicToggle.classList.remove('playing');
+      if (musicLabel) musicLabel.textContent = 'Music Off';
+    }
+  };
+
+  musicToggle.addEventListener('click', toggleAudio);
+  musicToggle.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleAudio();
+    }
+  });
+}
+
+// Site Animations (Initiated after opening envelope)
+function initSiteAnimations() {
+  try {
+    // Split Text animations
+    const splitTexts = document.querySelectorAll('.split-text');
+    splitTexts.forEach((text) => {
+      try {
+        const type = new SplitType(text, { types: 'lines, words' });
+        gsap.from(type.words, {
+          scrollTrigger: {
+            trigger: text,
+            start: 'top 88%',
+          },
+          y: 35,
+          opacity: 0,
+          duration: 0.8,
+          stagger: 0.04,
+          ease: 'power3.out',
+        });
+      } catch (e) {
+        // Fallback for SplitType
+        gsap.from(text, {
+          scrollTrigger: {
+            trigger: text,
+            start: 'top 88%',
+          },
+          y: 25,
+          opacity: 0,
+          duration: 0.8,
+        });
+      }
     });
 
-    // Hide envelope and show transition heart
-    setTimeout(() => {
-        gsap.to(['.envelope-wrapper', '.loader-intro-text'], {
-            opacity: 0,
-            duration: 0.5,
-            onComplete: () => {
-                const envWrapper = document.querySelector('.envelope-wrapper');
-                const introText = document.querySelector('.loader-intro-text');
-                if (envWrapper) envWrapper.style.display = 'none';
-                if (introText) introText.style.display = 'none';
+    // Hero Background Image Parallax
+    gsap.to('.hero-bg-img', {
+      yPercent: 12,
+      scale: 1.12,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: '.hero-watercolor',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: 1,
+      }
+    });
 
-                // Show transition heart
-                const transitionHeart = document.querySelector('.loader-transition-heart');
-                if (transitionHeart) {
-                    transitionHeart.style.display = 'block';
-                    gsap.fromTo(transitionHeart,
-                        { opacity: 0, scale: 0.5 },
-                        { opacity: 1, scale: 1, duration: 0.5 }
-                    );
-                }
+    // Hero Text float up on scroll
+    gsap.to('.hero-content', {
+      yPercent: -20,
+      opacity: 0.85,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: '.hero-watercolor',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: 1,
+      }
+    });
 
-                // Wait for heart animation, then hide entire loader
-                setTimeout(() => {
-                    gsap.to(loader, {
-                        opacity: 0,
-                        duration: 1.5,
-                        ease: 'power4.inOut',
-                        onComplete: () => {
-                            loader.style.display = 'none';
-                            initAnimations(); // Start main animations once loader is gone
-                        }
-                    });
-                }, 1500); // Heart pulses for 1.5s
-            }
-        });
-    }, 800); // Wait for envelope flap animation to complete first
-});
+    // Traditional Parchment Card Entrance
+    gsap.from('.parchment-watercolor-card', {
+      scrollTrigger: {
+        trigger: '.traditional-invite-section',
+        start: 'top 75%',
+      },
+      y: 60,
+      opacity: 0,
+      duration: 1.2,
+      ease: 'power3.out',
+    });
 
-// Music Toggle
-musicToggle.addEventListener('click', () => {
-    if (bgMusic.paused) {
-        bgMusic.play().then(() => {
-            musicToggle.classList.add('playing');
-            document.getElementById('music-text-label').textContent = 'Music On';
-        }).catch(e => {
-            alert("Music could not be played! Please make sure you have added the 'chingamasam-vannu-chernnal.mp3' file into the 'assets' folder.");
-        });
+    // Schedule Cards Stagger Entrance
+    gsap.from('.schedule-card', {
+      scrollTrigger: {
+        trigger: '.events-schedule-section',
+        start: 'top 75%',
+      },
+      y: 50,
+      opacity: 0,
+      duration: 1,
+      stagger: 0.2,
+      ease: 'power3.out',
+    });
+
+    // Floating Solid Love Hearts in Hero
+    createHeroPetals();
+
+  } catch (err) {
+    console.error("Site animations error:", err);
+  }
+}
+
+// Hero Floating Solid Love Hearts
+function createHeroPetals() {
+  const container = document.querySelector('.petals-container');
+  if (!container) return;
+
+  const heartColors = ['#e11d48', '#f43f5e', '#fb7185', '#2bb1b9'];
+
+  for (let i = 0; i < 16; i++) {
+    const heart = document.createElement('div');
+    heart.className = 'floating-hero-heart';
+    heart.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" width="100%" height="100%"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+    const size = Math.floor(14 + Math.random() * 18);
+    heart.style.position = 'absolute';
+    heart.style.left = `${Math.random() * 100}%`;
+    heart.style.top = `${-30 + Math.random() * 20}px`;
+    heart.style.width = `${size}px`;
+    heart.style.height = `${size}px`;
+    heart.style.color = heartColors[Math.floor(Math.random() * heartColors.length)];
+    heart.style.opacity = `${0.35 + Math.random() * 0.4}`;
+    heart.style.pointerEvents = 'none';
+    heart.style.filter = 'drop-shadow(0 2px 6px rgba(225, 29, 72, 0.3))';
+
+    container.appendChild(heart);
+
+    gsap.to(heart, {
+      y: '100vh',
+      x: `+=${Math.random() * 160 - 80}`,
+      rotation: Math.random() * 180 - 90,
+      duration: 9 + Math.random() * 9,
+      repeat: -1,
+      ease: 'linear',
+      delay: Math.random() * 6,
+    });
+  }
+}
+
+// Countdown Logic: October 21, 2026, 10:00:00 IST
+function initCountdown() {
+  const weddingTime = new Date('2026-10-21T10:00:00+05:30').getTime();
+
+  function updateTimer() {
+    const now = new Date().getTime();
+    const distance = weddingTime - now;
+
+    const daysEl = document.getElementById('days');
+    const hoursEl = document.getElementById('hours');
+    const minutesEl = document.getElementById('minutes');
+    const secondsEl = document.getElementById('seconds');
+
+    if (distance > 0) {
+      const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((distance % (1000 * 60)) / 1000);
+
+      if (daysEl) daysEl.innerText = d.toString().padStart(2, '0');
+      if (hoursEl) hoursEl.innerText = h.toString().padStart(2, '0');
+      if (minutesEl) minutesEl.innerText = m.toString().padStart(2, '0');
+      if (secondsEl) secondsEl.innerText = s.toString().padStart(2, '0');
     } else {
-        bgMusic.pause();
-        musicToggle.classList.remove('playing');
-        document.getElementById('music-text-label').textContent = 'Music Off';
+      if (daysEl) daysEl.innerText = '00';
+      if (hoursEl) hoursEl.innerText = '00';
+      if (minutesEl) minutesEl.innerText = '00';
+      if (secondsEl) secondsEl.innerText = '00';
     }
-});
+  }
 
+  updateTimer();
+  setInterval(updateTimer, 1000);
+}
 
-// Main Animations (called after loader)
-function initAnimations() {
+// Wishes WhatsApp Integration (Dual Buttons for Andrews & Neha)
+document.addEventListener('DOMContentLoaded', () => {
+  // =========================================================================
+  // GOOGLE FIREBASE REAL-TIME WISHES & BLESSINGS (Live Only, No Dummy Data)
+  // =========================================================================
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  const LOCAL_WISHES_KEY = 'andrews_neha_wedding_wishes_live';
+  
+  // Purge any legacy test cache so no old sample wishes linger
+  try {
+    localStorage.removeItem('andrews_neha_wedding_wishes_v1');
+    localStorage.removeItem('andrews_neha_wedding_wishes_local');
+  } catch (e) {}
+
+  function getLocalWishes() {
     try {
-        // Trigger Speech Bubbles
-        const bubbleContainers = document.querySelectorAll('.speech-bubbles-container');
-        bubbleContainers.forEach(container => container.classList.add('start-animation'));
-        
-        // Split text setup
-        const splitTexts = document.querySelectorAll('.split-text');
-        splitTexts.forEach(text => {
-            try {
-                const type = new SplitType(text, { types: 'lines, words' });
+      const raw = localStorage.getItem(LOCAL_WISHES_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
 
-                gsap.from(type.words, {
-                    scrollTrigger: {
-                        trigger: text,
-                        start: 'top 90%',
-                    },
-                    y: 50,
-                    opacity: 0,
-                    duration: 1,
-                    stagger: 0.05,
-                    ease: 'power4.out'
-                });
-            } catch (e) {
-                console.error("SplitType error", e);
-            }
-        });
+  function saveLocalWish(wish) {
+    try {
+      const list = getLocalWishes();
+      list.unshift(wish);
+      localStorage.setItem(LOCAL_WISHES_KEY, JSON.stringify(list));
+    } catch (e) {}
+  }
 
-        // Hero Parallax & Zoom
-        gsap.to('.hero-img', {
-            scale: 1, // original is 1.1 in css
-            yPercent: 20,
-            ease: 'none',
-            scrollTrigger: {
-                trigger: '.hero',
-                start: 'top top',
-                end: 'bottom top',
-                scrub: true
-            }
-        });
+  let marqueeAnimation = null;
+  let autoScrollId = null;
 
-        gsap.to('.hero-content', {
-            yPercent: -50,
-            opacity: 0,
-            ease: 'none',
-            scrollTrigger: {
-                trigger: '.hero',
-                start: 'top top',
-                end: 'bottom top',
-                scrub: true
-            }
-        });
+  function stopMarqueeMotion() {
+    if (marqueeAnimation) {
+      marqueeAnimation.kill();
+      marqueeAnimation = null;
+    }
+    if (autoScrollId) {
+      cancelAnimationFrame(autoScrollId);
+      autoScrollId = null;
+    }
+  }
 
-        // Parallax for bride & groom hero avatars
-        gsap.to(['.hero-img-left', '.hero-img-right'], {
-            yPercent: -200,
-            rotation: 5,
-            ease: 'none',
-            scrollTrigger: {
-                trigger: '.hero',
-                start: 'top top',
-                end: 'bottom top',
-                scrub: true
-            }
-        });
+  function startAutoPan() {
+    const marqueeWrapper = document.getElementById('marqueeWrapper');
+    if (!marqueeWrapper) return;
+    if (autoScrollId) cancelAnimationFrame(autoScrollId);
 
-        // Floating Hearts Parallax at the bottom of hero section
-        const petalsContainer = document.querySelector('.petals-container');
-        if (petalsContainer) {
-            for (let i = 0; i < 40; i++) {
-                const heart = document.createElement('div');
-                heart.innerHTML = '&#x2665;&#xFE0E;';
-                heart.className = 'scroll-heart';
-                heart.style.left = `${Math.random() * 100}%`; // Span the full width of the screen
-                heart.style.bottom = `${-50 + Math.random() * 50}px`; // Start consistently near the bottom edge
-                heart.style.fontSize = `${3 + Math.random() * 3}rem`; // Make them significantly bigger (3rem to 6rem)
-                // Mix of red and dark red
-                heart.style.color = Math.random() > 0.5 ? '#d22329' : '#8f171b';
-                heart.style.opacity = 0.5 + Math.random() * 0.5;
-                petalsContainer.appendChild(heart);
-            }
+    const maxScroll = marqueeWrapper.scrollWidth - marqueeWrapper.clientWidth;
+    if (maxScroll <= 10) return; // Not overflowing, no motion needed
 
-            gsap.to('.scroll-heart', {
-                y: () => -window.innerHeight * (1 + Math.random()), // Move up past the screen
-                rotation: () => -100 + Math.random() * 200, // Random rotation
-                ease: 'none',
-                scrollTrigger: {
-                    trigger: '.hero',
-                    start: 'top top',
-                    end: 'bottom -100%', // Animate well past the hero section
-                    scrub: true
-                }
-            });
+    let dir = 1;
+    let isPaused = false;
+
+    function step() {
+      if (!isPaused && !marqueeWrapper.classList.contains('is-dragging')) {
+        marqueeWrapper.scrollLeft += 0.6 * dir;
+        const current = marqueeWrapper.scrollLeft;
+        const max = marqueeWrapper.scrollWidth - marqueeWrapper.clientWidth;
+
+        if (current >= max - 2 && dir === 1) {
+          dir = -1;
+          isPaused = true;
+          setTimeout(() => { isPaused = false; }, 2500);
+        } else if (current <= 2 && dir === -1) {
+          dir = 1;
+          isPaused = true;
+          setTimeout(() => { isPaused = false; }, 2500);
         }
-        // Invitation Section Animation
-        const invitationSection = document.querySelector('.invitation-section');
-        if (invitationSection) {
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: '.invitation-section',
-                    start: 'top top',
-                    end: 'bottom bottom',
-                    scrub: 1
-                }
-            });
+      }
+      autoScrollId = requestAnimationFrame(step);
+    }
 
-            // Split the bride and groom images apart (along with their backgrounds) using relative vw units so they move at the exact same speed
-            tl.to(['.invite-img-left', '.invite-bg-left'], { x: "-=60vw", opacity: 0, duration: 2 }, 0);
-            tl.to(['.invite-img-right', '.invite-bg-right'], { x: "+=60vw", opacity: 0, duration: 2 }, 0);
+    autoScrollId = requestAnimationFrame(step);
+  }
 
-            // Fade in and float up the invitation letter
-            tl.to('.invitation-letter', { yPercent: -20, opacity: 1, duration: 2 }, 0.5);
+  function renderWishesToMarquee(wishesList) {
+    const marqueeTrack = document.getElementById('marqueeTrack');
+    const marqueeWrapper = document.getElementById('marqueeWrapper');
+    const noWishesPlaceholder = document.getElementById('noWishesPlaceholder');
+    const marqueeInstruction = document.getElementById('marqueeInstruction');
+    if (!marqueeTrack || !marqueeWrapper) return;
 
-            // Pop in the big hearts at the bottom of the letter
-            tl.to('.letter-heart', { y: 0, scale: 1, opacity: 1, duration: 1.5, stagger: 0.2 }, 1.5);
+    stopMarqueeMotion();
+    gsap.set(marqueeTrack, { clearProps: 'all' });
+
+    // If no wishes yet, show "No wishes yet" empty state
+    if (!wishesList || wishesList.length === 0) {
+      if (noWishesPlaceholder) noWishesPlaceholder.style.display = 'flex';
+      marqueeTrack.style.display = 'none';
+      marqueeTrack.innerHTML = '';
+      if (marqueeInstruction) marqueeInstruction.style.display = 'none';
+      return;
+    }
+
+    // When real wishes exist, hide placeholder and display track
+    if (noWishesPlaceholder) noWishesPlaceholder.style.display = 'none';
+    marqueeTrack.style.display = 'flex';
+
+    const isSingleWish = wishesList.length === 1;
+
+    // Render EACH wish strictly ONCE — NO DUPLICATES / NO REPEATS
+    const cardsHtml = wishesList.map(w => `
+      <div class="wish-card-item ${isSingleWish ? 'is-single' : ''}">
+        <span class="quote-sign">“</span>
+        <p class="wish-quote">${escapeHtml(w.message)}</p>
+        <div class="wish-meta">
+          <div>
+            <span class="author-name">${escapeHtml(w.name)}</span>
+            <span class="author-relation">${escapeHtml(w.relation || 'Guest Blessing')}</span>
+          </div>
+          ${w.time ? `<span class="wish-meta-time">${escapeHtml(w.time)}</span>` : ''}
+        </div>
+      </div>
+    `).join('');
+
+    // Strict 1-to-1 card rendering: no repeating
+    marqueeTrack.innerHTML = cardsHtml;
+
+    // Layout: If single wish, center it gracefully without movement
+    if (isSingleWish) {
+      marqueeTrack.classList.add('is-centered');
+      if (marqueeInstruction) marqueeInstruction.style.display = 'none';
+      marqueeWrapper.scrollLeft = 0;
+    } else {
+      // Multiple wishes: check if content overflows the screen
+      requestAnimationFrame(() => {
+        const isOverflowing = marqueeTrack.scrollWidth > marqueeWrapper.clientWidth;
+        if (isOverflowing) {
+          marqueeTrack.classList.remove('is-centered');
+          if (marqueeInstruction) {
+            marqueeInstruction.style.display = 'block';
+            marqueeInstruction.textContent = 'Drag or swipe to read all blessings';
+          }
+          startAutoPan();
+        } else {
+          marqueeTrack.classList.add('is-centered');
+          if (marqueeInstruction) marqueeInstruction.style.display = 'none';
         }
+      });
+    }
 
-        // Location Cards Reveal
-        gsap.from('.location-card', {
-            scrollTrigger: {
-                trigger: '.location-details',
-                start: 'top 70%',
-            },
-            y: 50,
-            opacity: 0,
-            duration: 1,
-            ease: 'power3.out',
-            stagger: 0.2
-        });
+    // Initialize smooth mouse drag on wrapper once
+    if (!marqueeWrapper.dataset.hasDragScroll) {
+      marqueeWrapper.dataset.hasDragScroll = 'true';
 
-        // Event Cards Hover (CSS handles hover, GSAP handles entry)
-        gsap.from('.event-card', {
-            scrollTrigger: {
-                trigger: '.events-section',
-                start: 'top 70%',
-            },
-            y: 100,
-            opacity: 0,
-            duration: 1,
-            stagger: 0.2,
-            ease: 'power3.out'
-        });
+      let isDown = false;
+      let startX = 0;
+      let scrollLeft = 0;
 
-        // Gallery Parallax
-        gsap.utils.toArray('.gallery-item').forEach((item, i) => {
-            gsap.from(item, {
-                scrollTrigger: {
-                    trigger: item,
-                    start: 'top 90%',
-                },
-                y: 50,
-                opacity: 0,
-                duration: 1,
-                ease: 'power3.out'
-            });
-        });
+      marqueeWrapper.addEventListener('mousedown', (e) => {
+        isDown = true;
+        marqueeWrapper.classList.add('is-dragging');
+        startX = e.pageX - marqueeWrapper.offsetLeft;
+        scrollLeft = marqueeWrapper.scrollLeft;
+        stopMarqueeMotion();
+      });
 
-        // Countdown Logic
-        const targetDate = new Date('August 23, 2026 10:00:00').getTime();
-        setInterval(() => {
-            const now = new Date().getTime();
-            const distance = targetDate - now;
-
-            if (distance > 0) {
-                const d = document.getElementById('days');
-                const h = document.getElementById('hours');
-                const m = document.getElementById('minutes');
-                const s = document.getElementById('seconds');
-                if (d) d.innerText = Math.floor(distance / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
-                if (h) h.innerText = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
-                if (m) m.innerText = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
-                if (s) s.innerText = Math.floor((distance % (1000 * 60)) / 1000).toString().padStart(2, '0');
-            }
-        }, 1000);
-
-        // RSVP Couple Image Animation
-        gsap.from('.rsvp-couple-img', {
-            scrollTrigger: {
-                trigger: '.rsvp-section',
-                start: 'top 70%',
-            },
-            x: -50,
-            opacity: 0,
-            duration: 1.5,
-            ease: 'power3.out'
-        });
-
-        // Wishes Marquee Infinite Clone
-        const marqueeTrack = document.querySelector('.marquee-track');
-        if (marqueeTrack) {
-            // Clone the content for seamless infinite scrolling
-            const content = marqueeTrack.innerHTML;
-            marqueeTrack.innerHTML = content + content;
-
-            const marqueeAnim = gsap.to('.marquee-track', {
-                xPercent: -50,
-                ease: "none",
-                duration: 40, // Reduced speed
-                repeat: -1
-            });
-
-            const wrapper = document.querySelector('.marquee-wrapper');
-            wrapper.style.cursor = 'grab';
-
-            // Pause on hover
-            wrapper.addEventListener('mouseenter', () => marqueeAnim.pause());
-            wrapper.addEventListener('mouseleave', () => {
-                if (!isDragging) marqueeAnim.play();
-            });
-
-            // Control reel with cursor (drag to scroll)
-            let isDragging = false;
-            let startX;
-            let startProgress;
-
-            const onDragStart = (x) => {
-                isDragging = true;
-                startX = x;
-                startProgress = marqueeAnim.progress();
-                wrapper.style.cursor = 'grabbing';
-                marqueeAnim.pause();
-            };
-
-            const onDragMove = (x) => {
-                if (!isDragging) return;
-                const dx = x - startX;
-                const trackWidth = marqueeTrack.offsetWidth / 2; // Half width because of cloned content
-                let newProgress = startProgress - (dx / trackWidth);
-                
-                // Keep progress wrapped infinitely between 0 and 1
-                newProgress = newProgress % 1;
-                if (newProgress < 0) newProgress += 1;
-                
-                marqueeAnim.progress(newProgress);
-            };
-
-            const onDragEnd = () => {
-                isDragging = false;
-                wrapper.style.cursor = 'grab';
-                // Only resume playing if not still hovering
-                if (!wrapper.matches(':hover')) {
-                    marqueeAnim.play();
-                }
-            };
-
-            // Mouse Events
-            wrapper.addEventListener('mousedown', (e) => onDragStart(e.pageX));
-            window.addEventListener('mousemove', (e) => onDragMove(e.pageX));
-            window.addEventListener('mouseup', onDragEnd);
-
-            // Touch Events for mobile
-            wrapper.addEventListener('touchstart', (e) => onDragStart(e.touches[0].pageX));
-            window.addEventListener('touchmove', (e) => onDragMove(e.touches[0].pageX));
-            window.addEventListener('touchend', onDragEnd);
+      window.addEventListener('mouseup', () => {
+        if (!isDown) return;
+        isDown = false;
+        marqueeWrapper.classList.remove('is-dragging');
+        if (wishesList && wishesList.length > 1) {
+          startAutoPan();
         }
+      });
 
-        // Wishes Form WhatsApp Integration (Two Buttons)
-        const wishesForm = document.getElementById('wishesForm');
-        const wishSuccessMsg = document.getElementById('wishSuccess');
-        const btnSendGroom = document.getElementById('btnSendGroom');
-        const btnSendBride = document.getElementById('btnSendBride');
+      marqueeWrapper.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - marqueeWrapper.offsetLeft;
+        const walk = (x - startX) * 1.4;
+        marqueeWrapper.scrollLeft = scrollLeft - walk;
+      });
 
-        if (wishesForm) {
-            let sentToGroom = false;
-            let sentToBride = false;
-
-            const sendWishes = (recipient) => {
-                const nameInput = document.getElementById('wishName');
-                const messageInput = document.getElementById('wishMessage');
-
-                // Simple validation
-                if (!nameInput.value.trim() || !messageInput.value.trim()) {
-                    alert("Please enter your name and beautiful wishes before sending!");
-                    return;
-                }
-
-                // Construct the WhatsApp message
-                const rawText = `Hello Jijo & Aleena! I am ${nameInput.value}.\n\n${messageInput.value}`;
-                const encodedText = encodeURIComponent(rawText);
-
-                // IMPORTANT: Replace these numbers with the actual WhatsApp numbers (include country code, e.g. 919876543210)
-                const groomNumber = "+971568087534"; // Groom's WhatsApp
-                const brideNumber = "+971561412591"; // Bride's WhatsApp
-
-                const targetNumber = recipient === 'groom' ? groomNumber : brideNumber;
-                const whatsappUrl = `https://wa.me/${targetNumber}?text=${encodedText}`;
-
-                // Open WhatsApp in a new tab
-                window.open(whatsappUrl, '_blank');
-
-                // Disable the clicked button and update state
-                if (recipient === 'groom') {
-                    sentToGroom = true;
-                    if (btnSendGroom) {
-                        btnSendGroom.disabled = true;
-                        btnSendGroom.style.opacity = '0.5';
-                        btnSendGroom.innerText = 'Sent to Jijo ✓';
-                        btnSendGroom.style.cursor = 'not-allowed';
-                    }
-                } else {
-                    sentToBride = true;
-                    if (btnSendBride) {
-                        btnSendBride.disabled = true;
-                        btnSendBride.style.opacity = '0.5';
-                        btnSendBride.innerText = 'Sent to Aleena ✓';
-                        btnSendBride.style.cursor = 'not-allowed';
-                    }
-                }
-
-                // Update success message text based on recipient
-                const recipientName = recipient === 'groom' ? 'Jijo' : 'Aleena';
-                const otherName = recipient === 'groom' ? 'Aleena' : 'Jijo';
-
-                if (wishSuccessMsg) {
-                    let msgHTML = `<h3>Thank You!</h3><p>Your beautiful wishes have been sent to ${recipientName}.</p>`;
-
-                    if (sentToGroom && sentToBride) {
-                        msgHTML = `<h3>Thank You!</h3><p>Your beautiful wishes have been sent to both Jijo and Aleena.</p>`;
-                    } else {
-                        msgHTML += `<p style="font-size: 0.95rem; margin-top: 8px; color: var(--c-champagne);">Don't forget to send your wishes to ${otherName} too!</p>`;
-                    }
-
-                    wishSuccessMsg.innerHTML = msgHTML;
-                    wishSuccessMsg.style.display = 'block';
-
-                    // Simple animation for the success message
-                    gsap.fromTo(wishSuccessMsg,
-                        { y: 20, opacity: 0 },
-                        { y: 0, opacity: 1, duration: 0.5 }
-                    );
-
-                    // Clear the message input so they can easily write another wish to the other person
-                    messageInput.value = '';
-                }
-            };
-
-            if (btnSendGroom) btnSendGroom.addEventListener('click', () => sendWishes('groom'));
-            if (btnSendBride) btnSendBride.addEventListener('click', () => sendWishes('bride'));
+      marqueeWrapper.addEventListener('mouseenter', () => stopMarqueeMotion());
+      marqueeWrapper.addEventListener('mouseleave', () => {
+        if (!isDown && wishesList && wishesList.length > 1) {
+          startAutoPan();
         }
+      });
+    }
+  }
 
-        // Floating Petals Animation
-        createPetals();
+  // Initialize Realtime Listeners
+  function initRealtimeWishes() {
+    const db = window.weddingFirebase?.db;
+    const isFirebaseLive = window.weddingFirebase?.isLive;
+
+    if (isFirebaseLive && db) {
+      console.log("📡 Subscribed to Google Firebase Realtime Database for live guestbook updates!");
+      const wishesRef = db.ref('wedding_wishes');
+
+      wishesRef.on('value', (snapshot) => {
+        const liveData = [];
+        snapshot.forEach((child) => {
+          liveData.unshift({ id: child.key, ...child.val() });
+        });
+        renderWishesToMarquee(liveData);
+      }, (err) => {
+        console.warn("Firebase listener notice:", err);
+        renderWishesToMarquee(getLocalWishes());
+      });
+    } else {
+      // Local real-time mode
+      renderWishesToMarquee(getLocalWishes());
+      window.addEventListener('storage', (e) => {
+        if (e.key === LOCAL_WISHES_KEY) {
+          renderWishesToMarquee(getLocalWishes());
+        }
+      });
+    }
+  }
+
+  initRealtimeWishes();
+
+  // Wish Submission Handler (Saves to Firebase & opens WhatsApp)
+  async function handleWishSubmission(recipient) {
+    const nameInput = document.getElementById('wishName');
+    const messageInput = document.getElementById('wishMessage');
+    const wishSuccess = document.getElementById('wishSuccess');
+    const wishFeedbackText = document.getElementById('wishFeedbackText');
+    const activeBtn = recipient === 'groom' ? document.getElementById('btnSendGroom') : document.getElementById('btnSendBride');
+
+    if (activeBtn && activeBtn.disabled) {
+      return;
+    }
+
+    const guestName = nameInput ? nameInput.value.trim() : '';
+    const guestMessage = messageInput ? messageInput.value.trim() : '';
+
+    if (!guestName || !guestMessage) {
+      alert("Please enter both your name and wedding wishes!");
+      if (!guestName && nameInput) nameInput.focus();
+      else if (messageInput) messageInput.focus();
+      return;
+    }
+
+    const recipientName = recipient === 'groom' ? 'Andrews' : 'Neha';
+    const now = new Date();
+    const timeStr = now.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    const wishPayload = {
+      name: guestName,
+      relation: 'Guest Blessing',
+      message: guestMessage,
+      time: timeStr,
+      timestamp: Date.now()
+    };
+
+    if (activeBtn) activeBtn.style.opacity = '0.7';
+
+    const db = window.weddingFirebase?.db;
+    const isFirebaseLive = window.weddingFirebase?.isLive;
+
+    try {
+      if (isFirebaseLive && db) {
+        // Push directly to Google Firebase Realtime Database
+        await db.ref('wedding_wishes').push({
+          ...wishPayload,
+          timestamp: firebase.database.ServerValue.TIMESTAMP || Date.now()
+        });
+        console.log("🔥 Wish posted to Google Firebase Realtime Database!");
+      } else {
+        // Local real-time sync
+        saveLocalWish(wishPayload);
+        renderWishesToMarquee(getLocalWishes());
+      }
+
+      // Disable respective button after wish is submitted
+      if (activeBtn) {
+        activeBtn.disabled = true;
+        activeBtn.classList.add('is-disabled');
+        const textSpan = activeBtn.querySelector('.wa-btn-text');
+        if (textSpan) {
+          textSpan.textContent = `Sent to ${recipientName} ✓`;
+        }
+      }
+
+      if (wishSuccess) {
+        wishSuccess.style.display = 'inline-flex';
+        if (wishFeedbackText) {
+          wishFeedbackText.textContent = `Thank you ${guestName}! Your blessings are saved and sent to ${recipientName}.`;
+        }
+        gsap.fromTo(wishSuccess, 
+          { y: 8, opacity: 0 }, 
+          { y: 0, opacity: 1, duration: 0.35, ease: 'power2.out' }
+        );
+      }
+
     } catch (err) {
-        console.error("Error in initAnimations:", err);
+      console.error("Firebase write error, using fallback:", err);
+      saveLocalWish(wishPayload);
+      renderWishesToMarquee(getLocalWishes());
+
+      // Disable respective button on fallback as well
+      if (activeBtn) {
+        activeBtn.disabled = true;
+        activeBtn.classList.add('is-disabled');
+        const textSpan = activeBtn.querySelector('.wa-btn-text');
+        if (textSpan) {
+          textSpan.textContent = `Sent to ${recipientName} ✓`;
+        }
+      }
+    } finally {
+      if (activeBtn && !activeBtn.disabled) {
+        activeBtn.style.opacity = '1';
+      }
     }
-}
 
-function createPetals() {
-    const container = document.querySelector('.petals-container');
-    if (!container) return;
+    // Open WhatsApp for the selected couple member
+    const groomWhatsApp = "+919188384257"; // Andrews (+91 91883 84257)
+    const brideWhatsApp = "+918921041145"; // Neha (+91 89210 41145)
+    const targetNumber = recipient === 'groom' ? groomWhatsApp : brideWhatsApp;
 
-    for (let i = 0; i < 20; i++) {
-        const petal = document.createElement('div');
-        petal.classList.add('petal');
-        petal.style.left = `${Math.random() * 100}vw`;
-        petal.style.animationDuration = `${Math.random() * 5 + 5}s`;
-        petal.style.animationDelay = `${Math.random() * 5}s`;
+    const messageTemplate = 
+`Dear ${recipientName} & ${recipient === 'groom' ? 'Neha' : 'Andrews'}! 💍💐
+Warmest congratulations on your wedding!
 
-        // basic petal style inline
-        petal.style.position = 'absolute';
-        petal.style.top = '-20px';
-        petal.style.width = '15px';
-        petal.style.height = '15px';
-        petal.style.background = 'var(--c-rose)';
-        petal.style.opacity = '0.4';
-        petal.style.borderRadius = '50% 0 50% 50%';
-        petal.style.transform = `rotate(${Math.random() * 360}deg)`;
+"${guestMessage}"
 
-        container.appendChild(petal);
+With love & prayers,
+— ${guestName}`;
 
-        gsap.to(petal, {
-            y: '100vh',
-            x: `+=${Math.random() * 200 - 100}`,
-            rotation: '+=360',
-            duration: Math.random() * 5 + 5,
-            repeat: -1,
-            ease: 'linear',
-            delay: Math.random() * 5
-        });
-    }
-}
+    const encodedMsg = encodeURIComponent(messageTemplate);
+    const whatsappUrl = `https://wa.me/${targetNumber.replace(/\+/g, '')}?text=${encodedMsg}`;
+    window.open(whatsappUrl, '_blank');
+  }
+
+  const btnSendGroom = document.getElementById('btnSendGroom');
+  const btnSendBride = document.getElementById('btnSendBride');
+
+  if (btnSendGroom) {
+    btnSendGroom.addEventListener('click', () => handleWishSubmission('groom'));
+  }
+  if (btnSendBride) {
+    btnSendBride.addEventListener('click', () => handleWishSubmission('bride'));
+  }
+});
