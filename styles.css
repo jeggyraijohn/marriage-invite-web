@@ -733,9 +733,10 @@ body {
   object-fit: cover;
   object-position: center 25%;
   display: block;
-  transform: scale(1.01);
-  transition: transform 1.2s ease-out;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
   pointer-events: none;
+  transition: none !important;
 }
 
 .hero-bg-overlay {
@@ -2601,19 +2602,30 @@ body {
 
   /* Hero Mobile Layout: Keep text at top & place badge at bottom so Andrews & Neha are 100% visible */
   .hero-watercolor {
-    min-height: 100svh;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
     padding: 40px 12px 14px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
+    position: relative;
+    overflow: hidden;
   }
 
   .hero-bg-wrapper {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
+    overflow: hidden;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
   }
 
   .hero-picture {
@@ -2627,6 +2639,12 @@ body {
     object-position: center bottom !important;
     object-fit: cover !important;
     pointer-events: none;
+    transition: none !important;
+    transform: translate3d(0, 0, 0) !important;
+    -webkit-transform: translate3d(0, 0, 0) !important;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: auto;
   }
 
   .hero-bg-overlay {
@@ -2638,6 +2656,8 @@ body {
         rgba(250, 247, 242, 0.94) 98%,
         #faf7f2 100%) !important;
     pointer-events: none;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
   }
 
   .hero-content {
@@ -2648,7 +2668,7 @@ body {
     padding: 0 4px;
     margin: 0 auto;
     width: 100%;
-    min-height: calc(100svh - 54px);
+    min-height: calc(100vh - 54px);
     z-index: 5;
     touch-action: pan-y;
   }

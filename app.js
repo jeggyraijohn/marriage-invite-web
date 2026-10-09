@@ -241,17 +241,9 @@ function initSiteAnimations() {
 
     // Mobile (<= 768px): Silky smooth, zero touch-drag resistance
     mm.add("(max-width: 768px)", () => {
-      // Gentle opacity fade only; NO backward yPercent translation fighting the thumb!
-      gsap.to('.hero-content', {
-        opacity: 0.45,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '.hero-watercolor',
-          start: 'top top',
-          end: 'bottom 25%',
-          scrub: 0.5,
-        }
-      });
+      // Clear any transform/scrub on hero background & content so mobile scrolls at 100% native speed
+      gsap.set('.hero-bg-img', { clearProps: 'all' });
+      gsap.set('.hero-content', { clearProps: 'transform' });
     });
 
     // Traditional Parchment Card Entrance
